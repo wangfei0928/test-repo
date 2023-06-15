@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userMapper">
+<!--    namespace:命名空间，与id属性共同构成唯一标识  namespace.findAll-->
+<!--    resultType: 返回结果类型（自动映射封装），要封装的实体全路径-->
+    <select id="findAll" resultType="uSeR">
+        select * from user
+    </select>
+
+<!--    #{} mybatis中的占位符-->
+    <insert id="saveUser" parameterType="user">
+        insert into user(username,birthday,sex,address) values(#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <update id="updateUser" parameterType="User">
+        <!--    更新用户-->
+        update user  set username = #{username},birthday = #{birthday} ,sex=#{sex},address=#{address} where id=#{id}
+    </update>
+
+<!--    删除用户  java.long.Integer-->
+    <delete id="deleteUser" parameterType="int">
+        delete from user where id = #{abd}
+    </delete>
+</mapper>
