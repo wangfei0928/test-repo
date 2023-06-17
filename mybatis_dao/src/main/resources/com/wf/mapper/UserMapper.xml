@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wf.mapper.UserMapper">
+
+    <!--根据id 查询用户标签    -->
+    <select id="findUserById" parameterType="int" resultMap="userResultMap">
+        select * from user  where id=#{id}
+    </select>
+
+
+
+    <!--id 标签的唯一标识-->
+    <!--type 封装后的实体类型-->
+    <resultMap id="userResultMap" type="user">
+        <!--手动配置映射关系-->
+
+        <!--id :用来配置主键-->
+        <id property="id" column="id"></id>
+        <!--result: 表示普通字段的封装-->
+        <result property="username" column="username"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="sex" column="sex"></result>
+        <result property="address" column="address"></result>
+
+    </resultMap>
+    <!--查询所有用户-->
+    <!--resultMap:手动配置实体属性与表中的映射关系-->
+    <select id="findAllResultMap" resultMap="userResultMap">
+        select * from user
+    </select>
+
+    <!--多条件查询方式一：-->
+    <select id="findByIdAndUsername" resultMap="userResultMap" >
+
+        <!-- select * from  user  where id=#{arg0} and username=#{arg1}-->
+        select * from user  where id= #{param1} and username = #{param2}
+    </select>
+
+    <!--多条件查询方式二：-->
+    <select id="findByIdAndUsername2" resultMap="userResultMap" >
+
+        select * from user  where id= #{id} and username = #{username}
+    </select>
+
+    <!--多条件查询方式三：-->
+    <select id="findByIdAndUsername3" resultMap="userResultMap"  parameterType="user">
+
+        select * from user  where id= #{id} and username = #{usernameabc}
+    </select>
+
+    <!--模糊查询：-->
+    <select id="findByUsername" resultMap="userResultMap"  parameterType="string">
+        <!--#{}在Mybatis中时占位符，引用参数值的时候会自动添加单引号-->
+        select * from user  where username like #{username}
+    </select>
+
+    <!--模糊查询方式二：-->
+    <select id="findByUsername2" resultMap="userResultMap"  parameterType="string">
+        <!-- parameterType是基本数据类型时或者是String 时，${}里面的值，只能写value
+        ${} sql原样拼接
+        -->
+        select * from user  where username like '${value }'
+    </select>
+
+    <!-- 添加用户，获取主键， 方式一-->
+    <!--
+    userGenerateKeys: 声明返回主键
+    keyProperty:把返回主键的值，封装到实体中的那个属性上
+    -->
+    <insert id="SaveUser" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        insert into user(username,birthday,sex,address) value(#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <!-- 添加用户，获取主键， 方式二-->
+    <!--
+        selectKey 的适用范围：适用所有类型的数据库
+        order="AFTER"  order属性   表示设置在sql语句执行前或执行后
+    -->
+    <insert id="SaveUser2" parameterType="user" >
+        <selectKey order="AFTER" keyProperty="id" keyColumn="id" resultType="int">
+            SELECT LAST_insert_ID();
+        </selectKey>
+        insert into user(username,birthday,sex,address) value(#{username},#{birthday},#{sex},#{address})
+    </insert>
+
+    <!--动态sql if  多条件查询-->
+    <select id="findByIdAndUsernameIf" resultType="user" parameterType="user">
+        select * from USER
+        <!--test 标签： 里面写的就是表达式
+          where 标签： 相当于where 但是如果没有条件的话， 不会拼接where关键字
+        -->
+        <where>
+            <if test="id !=null"  >
+                and  id = #{id}
+            </if>
+             <if test="username != null">
+                and username = #{username}
+             </if>
+        </where>
+    </select>
+
+    <!--动态sql set 更新-->
+    <update id="updateIf" parameterType="user">
+
+        <set>
+            <if test="username !=null" >
+                username = #{username},
+            </if>
+            <if test="birthday !=null" >
+                birthday = #{birthday},
+            </if>
+            <if test="sex !=null" >
+                sex = #{sex},
+            </if>
+            <if test="address !=null" >
+                address = #{address},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <!--动态sql if  多条件查询-->
+    <select id="findByList" resultType="user" parameterType="list">
+        select * from USER
+        <!-- collection:代表遍历的集合元素，通常是collection和list
+             open: 代表语句的开始部分
+             close:代表语句的结束部分
+             iteam: 代表遍历结合中的每个元素，生成的变量名
+             spearator: 分隔符
+        -->
+        <where>
+            <foreach collection="collection" open="id in (" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <sql id="SelectUser">
+        select * from user
+    </sql>
+
+    <!--动态sql if  多条件查询-->
+    <select id="findByArray" resultType="user" parameterType="int">
+
+        <include refid="SelectUser"/>
+
+        <!-- collection:代表遍历的集合元素，通常是collection和list
+             open: 代表语句的开始部分
+             close:代表语句的结束部分
+             iteam: 代表遍历结合中的每个元素，生成的变量名
+             spearator: 分隔符
+        -->
+        <where>
+            <foreach collection="array" open="id in (" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+</mapper>
